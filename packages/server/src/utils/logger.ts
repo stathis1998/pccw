@@ -1,5 +1,9 @@
 import winston from "winston";
 
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = "development";
+}
+
 export const logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(

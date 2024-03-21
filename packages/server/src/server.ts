@@ -4,11 +4,19 @@ import cors from "cors";
 import sequelize from "./config/db";
 import { runAssosiacion } from "./config/associations";
 import { logger } from "./utils/logger";
+import { getEnvironmentVariable } from "./utils/enviroment";
+
+import { Server } from "socket.io";
+import { createServer } from "http";
+
+import authRoutes from "./api/routes/authRoutes";
 
 const app = express();
+const server = createServer(app);
+const io = new Server(server);
 
-const port = process.env.PORT;
-const corsOrigin = process.env.CORS_ORIGIN;
+const port = getEnvironmentVariable("PORT");
+const corsOrigin = getEnvironmentVariable("CORS_ORIGIN");
 
 if (!port) {
   throw new Error("Port is not defined");
@@ -28,15 +36,24 @@ app.use(
   })
 );
 
+app.use("/api/auth", authRoutes);
+
+io.on("connection", (socket) => {
+  console.log("a user connected");
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+});
+
 sequelize
-  .sync({ force: true })
+  .sync({ force: false })
   .then(() => {
     logger.info("Connected to the database");
 
     runAssosiacion();
 
-    app.listen(port, () => {
-      logger.info(`Server is running on port ${port}`);
+    server.listen(port, () => {
+      logger.info(`Server is running on http://localhost:${port}`);
     });
   })
   .catch((error) => {
