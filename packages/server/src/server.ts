@@ -39,9 +39,9 @@ app.use(
 app.use("/api/auth", authRoutes);
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  logger.info("a user connected");
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    logger.info("user disconnected");
   });
 });
 
